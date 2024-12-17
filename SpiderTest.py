@@ -4,7 +4,7 @@ import json
 
 class HotelSpider(scrapy.Spider):
     name = "hotel_spider"
-    start_urls = ["https://uk.trip.com/hotels/list?city=86491"]
+    start_urls = ["https://uk.trip.com/hotels/?locale=en-GB&curr=GBP"]
 
     def parse(self, response):
         # Extract the JavaScript containing the `window.IBU_HOTEL` variable
@@ -20,11 +20,19 @@ class HotelSpider(scrapy.Spider):
                     # Parse the JSON data
                     hotel_json = json.loads(hotel_data)
 
-                    # Save the data to a JSON file
-                    with open("hotel_datav03.json", "w", encoding="utf-8") as f:
-                        json.dump(hotel_json, f, indent=4, ensure_ascii=False)
+                    # Extract and combine inbound and outbound cities
+                    inbound_cities = hotel_json.get("initData", {}).get("htlsData", {}).get("inboundCities", [])
+                    outbound_cities = hotel_json.get("initData", {}).get("htlsData", {}).get("outboundCities", [])
 
-                    self.log("Data successfully saved to hotel_data.json")
+                    combined_cities = {
+                        "cities": inbound_cities + outbound_cities  # Combine into one list
+                    }
+
+                    # Save the combined data to a JSON file
+                    with open("combined_cities.json", "w", encoding="utf-8") as f:
+                        json.dump(combined_cities, f, indent=4, ensure_ascii=False)
+
+                    self.log("Combined city data successfully saved to combined_cities.json")
                 except json.JSONDecodeError as e:
                     self.log(f"Failed to parse JSON: {e}")
             else:
