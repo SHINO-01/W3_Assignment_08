@@ -1,6 +1,5 @@
 import sqlalchemy
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy import Column, Integer, String, Float
 
 Base = declarative_base()
@@ -26,15 +25,14 @@ class HotelScrapperPipeline:
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
 
-    def process_item(self, item, spider):
+    def process_item(self, item, spider=None):
         session = self.Session()
         try:
             hotel = Hotel(**item)
             session.add(hotel)
             session.commit()
-            spider.log(f"Successfully added to database: {item}")
         except Exception as e:
-            spider.log(f"Error adding to database: {e}")
+            print(f"Error adding to database: {e}")
             session.rollback()
         finally:
             session.close()
