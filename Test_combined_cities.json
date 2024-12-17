@@ -1,1 +1,0 @@
-{"cities": [{"name": "London", "recommendHotels": [{"hotelName": "Test Hotel 1", "ratingTxt": "4.5", "fullAddress": "123 Test St, London", "lat": 51.5074, "lon": -0.1278, "brief": "Luxury Room", "prices": {"priceInfos": [{"type": "AverageWithoutTax", "price": 200}]}, "imgUrl": "/images/test1.jpg", "hotelJumpUrl": "https://testurl.com/hotel1"}]}]}
