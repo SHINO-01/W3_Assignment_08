@@ -3,10 +3,12 @@ import json
 import os
 import random
 from scrapy.exceptions import CloseSpider
+from urllib.parse import urljoin
 
 class HotelSpider(scrapy.Spider):
     name = "hotel_spider"
     start_urls = ["https://uk.trip.com/hotels/?locale=en-GB&curr=GBP"]
+    base_image_url = "https://ak-d.tripcdn.com/images/"
 
     def start_requests(self):
         json_file_path = "combined_cities.json"
@@ -30,6 +32,9 @@ class HotelSpider(scrapy.Spider):
                 selected_hotels = random.sample(recommend_hotels, min(3, len(recommend_hotels)))
 
                 for hotel in selected_hotels:
+                    # Process image URLs
+                    image_urls = self.process_image_urls(hotel)
+                    
                     yield {
                         "city": city_name,
                         "title": hotel.get("hotelName"),
@@ -39,7 +44,8 @@ class HotelSpider(scrapy.Spider):
                         "longitude": hotel.get("lon"),
                         "room_type": hotel.get("brief"),
                         "price": self.get_price(hotel),
-                        "images": hotel.get("imgUrl"),
+                        "images": image_urls,  # List of image URLs for database
+                        "image_urls": image_urls,  # Required for ImagesPipeline
                         "url": hotel.get("hotelJumpUrl"),
                     }
 
@@ -73,3 +79,23 @@ class HotelSpider(scrapy.Spider):
             if price.get("type") == "AverageWithoutTax":
                 return price.get("price")
         return None
+
+    def process_image_urls(self, hotel):
+        """
+        Extract and process image URLs for a hotel
+        """
+        # First, try picture list
+        picture_list = hotel.get("pictureList", [])
+        if picture_list:
+            return [
+                urljoin(self.base_image_url, pic.get("pictureUrl").lstrip('/')) 
+                for pic in picture_list 
+                if pic.get("pictureUrl")
+            ]
+        
+        # If no picture list, try direct image URL
+        hotel_img = hotel.get("imgUrl", '')
+        if hotel_img:
+            return [urljoin(self.base_image_url, hotel_img.lstrip('/'))]
+        
+        return []

@@ -9,5 +9,6 @@ class HotelScrapperItem(scrapy.Item):
     longitude = scrapy.Field()
     room_type = scrapy.Field()
     price = scrapy.Field()
-    images = scrapy.Field()
+    images = scrapy.Field()  # Now stores downloaded image paths
+    image_urls = scrapy.Field()  # Field for Scrapy's ImagesPipeline
     url = scrapy.Field()
